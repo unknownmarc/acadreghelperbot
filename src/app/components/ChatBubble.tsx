@@ -1,6 +1,6 @@
 type ChatBubbleProps = {
   content: string;
-  role: "User" | "AI";
+  role: "You" | "Helper Bot";
   id?: string;
 };
 

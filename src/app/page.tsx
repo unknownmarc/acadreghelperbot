@@ -1,54 +1,53 @@
 "use client";
 
-import { CoreMessage } from "ai";
-import { useState } from "react";
+import Image from "next/image";
+import ChatBubble from "./components/ChatBubble";
+import logo from "../app/Vellore_Institute_of_Technology_seal_2017.svg.png";
 
-export default function Page() {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<CoreMessage[]>([]);
+import { useChat } from "@ai-sdk/react";
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
 
   return (
-    <div>
-      <input
-        value={input}
-        onChange={(event) => {
-          setInput(event.target.value);
-        }}
-        onKeyDown={async (event) => {
-          if (event.key === "Enter") {
-            setMessages((currentMessages) => [
-              ...currentMessages,
-              { role: "user", content: input },
-            ]);
-
-            const response = await fetch("/api/chat", {
-              method: "POST",
-              body: JSON.stringify({
-                messages: [...messages, { role: "user", content: input }],
-              }),
-            });
-
-            const { messages: newMessages } = await response.json();
-
-            setMessages((currentMessages) => [
-              ...currentMessages,
-              ...newMessages,
-            ]);
-          }
-        }}
-      />
-
-      {messages.map((message, index) => (
-        <div key={`${message.role}-${index}`}>
-          {typeof message.content === "string"
-            ? message.content
-            : message.content
-                .filter((part) => part.type === "text")
-                .map((part, partIndex) => (
-                  <div key={partIndex}>{part.text}</div>
-                ))}
+    <>
+      <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+        <div className="flex items-center justify-left">
+          <div className="rounded-full overflow-hidden relative pb-5">
+            <Image
+              src={logo}
+              alt=""
+              width={50}
+              height={50}
+              className="object-cover"
+            />
+          </div>
         </div>
-      ))}
-    </div>
+
+        <h4 className="text-xl font-bold md:text-xl pb-4 text-white'">
+          VIT Helper Bot
+        </h4>
+        <h4 className="text-sm font-light  pb-4 text-gray-900'">
+          (Kindly allow the bot upto 30 seconds to answer)
+        </h4>
+
+        {messages.map((m) => (
+          <ChatBubble
+            key={m.id}
+            id={m.id}
+            role={m.role === "user" ? "You" : "Helper Bot"}
+            content={m.content}
+          />
+        ))}
+
+        <form onSubmit={handleSubmit}>
+          <input
+            className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl text-white"
+            value={input}
+            placeholder="What is your query..."
+            onChange={handleInputChange}
+          />
+        </form>
+      </div>
+    </>
   );
 }
